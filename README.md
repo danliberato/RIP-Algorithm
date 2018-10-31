@@ -1,5 +1,6 @@
 # RIP-Algorithm
 This program simulates a RIP (Routing Information Protocol).
+
 CONCEPTS:
 - There are 4 threads;
 - Each thread represents a router (Node);
