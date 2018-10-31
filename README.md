@@ -1,7 +1,7 @@
 # RIP-Algorithm
 This program simulates a RIP (Routing Information Protocol).
 
-CONCEPTS:
+Concepts:
 - There are 4 threads;
 - Each thread represents a router (Node);
 - All router are initialized with 3 entries on its Routing Table, each entrie represents a initial distance between the current router and its neighbors;
@@ -14,3 +14,5 @@ How it works?
 - If the current entrie has a destin router that is the same as who sent it, then calculates the total distance between previous and next hop;
 - If the current entrie has an infinite distance or the total cost is less than actual, updates its current entrie whit these values;
 - Last step is tell all its neighbors to update the respective routing tables
+
+Obs: some comments in code are in PT_BR, I'll change later
