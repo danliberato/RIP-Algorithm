@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,24 +14,25 @@ import java.util.logging.Logger;
  *
  * @author daan
  */
-public class Node {
+public class Node extends Thread {
 
     private String nodeId;
     private RoutingTable routingTable;
-    private int countingNonUpdates;
+    private int countNonUpd;
 
     public Node(String Id) {
         this.nodeId = Id;
-        this.countingNonUpdates = 0;
+        this.countNonUpd = 0;
     }
 
     /* (rtupdateN)
     The core of RIP
-    This method updates the routing table of the router
+    This method updates the routing table of the current router
     Basicly the router receives a RIP advertisement and than updates its table
      */
-    public void updateRoutingTable(RoutingTable neighborTable, Node whoSent) {
+    public synchronized void updateRoutingTable(RoutingTable neighborTable, Node whoSent) {
         int costToWhoSent = 0;
+        boolean wasUpd = false;
         //compara as entradas
         for (TableEntry neighborEntry : neighborTable.getRoutingTable()) {
             for (TableEntry currentEntry : this.routingTable.getRoutingTable()) {
@@ -38,21 +40,34 @@ public class Node {
                 Node nDest = neighborEntry.getDestinationRouter();
 
                 //get cost to the router that sent the routing table
-                if (currentEntry.getDestinationRouter() == whoSent) {
-                    costToWhoSent = currentEntry.getCost();
-                }
+                    costToWhoSent = this.getRoutingTable().getEntry(whoSent).getCost();
 
                 //if destination router are both the same...
                 if (currentEntry.getDestinationRouter() == nDest) {
-                    int cost = (neighborEntry.getCost() + costToWhoSent);
+                    //int cost = (neighborEntry.getCost() + costToWhoSent);
+                    int totalCost = (neighborEntry.getCost() + costToWhoSent);
                     //if the cost to the node is unknown
-                    if (currentEntry.getCost() == 999 || cost < currentEntry.getCost()) {
-                        System.out.println("*-> " + this.getNodeId() + " será atualizado");
-                        this.routingTable.updateEntry(nDest, whoSent, cost);
+                    //OR
+                    //if total cost (including the path to who sent) is less than actual cost to the same destin
+                    if (currentEntry.getCost() == 999 || totalCost < currentEntry.getCost()) {
+                        System.out.println("*-> " + this.getNodeId() + " será atualizado (Anuncio vindo de "+whoSent+")");
+                        System.out.println("Entrada "+ currentEntry);
+                        System.out.println("Agora é "+ nDest + " | "+whoSent + " | "+totalCost);
+                        currentEntry.setDestinationRouter(nDest);
+                        currentEntry.setNextRouter(whoSent);
+                        currentEntry.setCost(totalCost);
+                        this.sendUpdateTable();
                         this.showRoutingTable();
                     }
                 }
             }
+        }
+        if (wasUpd) {
+            System.out.println("*-> " + this.getNodeId() + " será atualizado");
+            this.showRoutingTable();
+        } else {
+            //System.out.println("*-> " + this.getNodeId() + " NÃO foi atualizado");
+            countNonUpd++;
         }
     }
 
@@ -60,6 +75,7 @@ public class Node {
     Announces its routing table to each immediate neighbor
      */
     public void sendUpdateTable() {
+
         for (Node n : this.getNeighborList()) {
             n.updateRoutingTable(this.routingTable, this);
         }
@@ -78,7 +94,7 @@ public class Node {
         return nList;
     }
 
-    public void showRoutingTable() {
+    public synchronized void showRoutingTable() {
         List<TableEntry> table = routingTable.getRoutingTable();
         System.out.println("------------ " + this.getNodeId() + " RoutingTable -----------");
         System.out.println("|    Dest    |    Next    |    Cost    |");
@@ -113,5 +129,23 @@ public class Node {
     @Override
     public String toString() {
         return this.getNodeId();
+    }
+
+    @Override
+    public void run() {
+
+        //while (countNonUpd < 2) {
+            try {
+                sleep(2000);
+                this.sendUpdateTable();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        //}
+        System.out.println(" -------------------------\n"
+                + "TABELA FINAL -> " + this);
+        this.showRoutingTable();
+
     }
 }

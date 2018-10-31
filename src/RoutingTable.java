@@ -5,7 +5,6 @@
  */
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -46,6 +45,18 @@ public class RoutingTable {
 
             }
         }
+    }
+
+    public TableEntry getEntry(Node nDest) {
+        for (TableEntry entry : this.routingTable) {
+
+            if (entry.getDestinationRouter().equals(nDest)) {
+
+                return entry;
+
+            }
+        }
+        return null;
     }
 
     public ArrayList<TableEntry> getRoutingTable() {

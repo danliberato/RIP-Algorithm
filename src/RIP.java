@@ -7,6 +7,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -18,7 +20,10 @@ public class RIP {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
         List<Node> nodeList = new ArrayList<>();
+        Random random = new Random();
+        int i = 0;
         //instancia os nós e inicializa as distancias para cada
         Node node0 = new Node("R0");
         Node node1 = new Node("R1");
@@ -57,16 +62,36 @@ public class RIP {
         node3.setRoutingTable(rt3);
         nodeList.add(node3);
 
-        for (Node n : nodeList) {
+        /*for (Node n : nodeList) {
             System.out.println(n.getNodeId() + " -  ROUND ");
             n.sendUpdateTable();
-        }
+            }
         
-        System.out.println("\n\n\n TABELAS FINAIS");
+        System.out.println("\n ---------------------------------------- "
+                + "\n\n\n TABELAS FINAIS");
+        node0.showRoutingTable();
+        node1.showRoutingTable();
+        node2.showRoutingTable();
+        node3.showRoutingTable();*/
+        
+        System.out.println("---------- TABELAS INICIALIZADAS ----------");
         node0.showRoutingTable();
         node1.showRoutingTable();
         node2.showRoutingTable();
         node3.showRoutingTable();
+        System.out.println("---------- Inicio da execução ----------");
+        
+        try {
+            node0.start();
+            Thread.sleep(random.nextInt(1500));
+            node1.start();
+            Thread.sleep(random.nextInt(1500));
+            node2.start();
+            Thread.sleep(random.nextInt(1500));
+            node3.start();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RIP.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 
